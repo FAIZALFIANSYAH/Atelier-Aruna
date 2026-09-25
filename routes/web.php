@@ -51,7 +51,8 @@ Route::middleware([CheckLogin::class, 'role:member'])->group(function () {
     Route::delete('/cart/item/{cartItem}', [CartController::class, 'removeItem'])->name('cart.removeItem');
 });
 
-Route::middleware([CheckLogin::class, 'role:cashier'])->group(function () {
+// Kasir: cashier dan admin boleh akses
+Route::middleware([CheckLogin::class, 'role:cashier,admin'])->group(function () {
     Route::get('/cashier/transaction', [TransactionController::class, 'pending'])->name('cashier.index');
     Route::patch('/cashier/transaction/{transaction}', [TransactionController::class, 'process'])->name('cashier.process');
 });
