@@ -15,6 +15,7 @@ class CartController extends Controller
      */
     public function index()
     {
+        $this->authorize('viewAny', Cart::class);
         $cart = Cart::firstOrCreate(['user_id' => Auth::id()]);
         $this->authorize('view', $cart);
         $cartItem = $cart->cartItems()->with('product')->get();
@@ -34,6 +35,8 @@ class CartController extends Controller
      */
     public function store(StoreCartRequest $request)
     {
+        $this->authorize('create', Cart::class);
+
         $validated = $request->validated();
         $user = Auth::user();
 
