@@ -11,7 +11,7 @@ class Transaction extends Model
     protected $fillable = [
         'transaction_code',
         'member_id',
-        'handle_by',
+        'handled_by',
         'status',
         'payment_method',
         'shipping_recipient',
@@ -21,7 +21,7 @@ class Transaction extends Model
         'shipping_postal_code',
     ];
     public function transactionDetails(){
-        return $this->hasmany(TransactionDetail::class);
+        return $this->hasMany(TransactionDetail::class);
     }
 
     public function member(){
