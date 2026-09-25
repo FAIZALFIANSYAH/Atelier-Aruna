@@ -16,18 +16,13 @@ use Illuminate\Support\Str;
 
 class TransactionService
 {
-    public function store(array $data)
+    public function store(array $data): Transaction
     {
-        //cari user yang sedang login
         $user = Auth::user();
-
-        //cari product
         $product = Product::findOrFail($data['product_id']);
-
         $transactionCode = 'TRX-' . date('Ymd') . '-' . strtoupper(Str::random(8));
 
-        //buat transaksi
-        DB::transaction(function () use ($transactionCode, $user, $product, $data) {
+        return DB::transaction(function () use ($transactionCode, $user, $product, $data) {
             $product = Product::lockForUpdate()->findOrFail($product->id);
 
             if ($product->current_stock <= 0) {
@@ -65,10 +60,12 @@ class TransactionService
                 'quantity' => $data['quantity'],
                 'description' => 'member membeli product',
             ]);
+
+            return $transaction->load(['transactionDetails.product', 'member']);
         });
     }
 
-    public function checkoutCart(array $data)
+    public function checkoutCart(array $data): Transaction
     {
         $user = Auth::user();
 
@@ -86,7 +83,7 @@ class TransactionService
 
         $transactionCode = 'TRX-' . date('Ymd') . '-' . strtoupper(Str::random(8));
 
-        DB::transaction(function () use ($transactionCode, $user, $cartItems, $data) {
+        return DB::transaction(function () use ($transactionCode, $user, $cartItems, $data) {
 
             $products = Product::whereIn('id', $cartItems->pluck('product_id')->sort()->values())
                 ->lockForUpdate()->get()->keyBy('id');
@@ -114,6 +111,7 @@ class TransactionService
                 'shipping_city' => $user->address_city,
                 'shipping_postal_code' => $user->address_postal_code,
             ]);
+
             foreach ($cartItems as $cartItem) {
                 TransactionDetail::create([
                     'transaction_id' => $transaction->id,
@@ -135,6 +133,8 @@ class TransactionService
             }
 
             $cartItems->each->delete();
+
+            return $transaction->load(['transactionDetails.product', 'member']);
         });
     }
 }
