@@ -2,8 +2,75 @@
 
 @section('content')
 <div class="management-page transaction-detail-page"><div class="management-shell">
-    <div class="management-heading"><div><span class="detail-eyebrow">PESANAN SAYA</span><h1>Detail Transaksi</h1><p>Informasi lengkap pesanan dan produk yang Anda beli.</p></div><a href="{{ route('transaction.history') }}" class="btn btn-light border"><i class="fas fa-arrow-left mr-1"></i> Kembali</a></div>
-    <section class="management-card detail-summary-card"><div class="detail-summary-top"><div><span class="detail-label">Kode transaksi</span><strong class="detail-code">{{ $transaction->transaction_code ?? '#'.$transaction->id }}</strong></div><span class="status-pill status-{{ $transaction->status }}">{{ ucfirst($transaction->status) }}</span></div><div class="detail-meta-grid"><div><span class="detail-label">Tanggal pesanan</span><strong>{{ $transaction->created_at->format('d M Y, H:i') }}</strong></div><div><span class="detail-label">Diproses oleh</span><strong>{{ $transaction->cashier?->name ?? 'Belum diproses' }}</strong></div>@if($transaction->payment_method)<div><span class="detail-label">Pembayaran</span><strong>{{ ucwords(str_replace('_', ' ', $transaction->payment_method)) }}</strong></div>@endif @if($transaction->shipping_city)<div><span class="detail-label">Pengiriman</span><strong>{{ $transaction->shipping_city }}</strong></div>@endif</div></section>
-    <section class="management-card detail-products-card"><div class="management-card-head"><h2>Produk Pesanan</h2><span class="category-count">{{ $transaction->transactionDetails->count() }} item</span></div><div class="table-responsive"><table class="table modern-table detail-table"><thead><tr><th>Produk</th><th>Harga</th><th>Jumlah</th><th class="text-right">Subtotal</th></tr></thead><tbody>@foreach($transaction->transactionDetails as $detail)<tr><td><div class="detail-product-name"><span class="detail-product-icon"><i class="fas fa-tshirt"></i></span><strong>{{ $detail->product->name }}</strong></div></td><td>Rp {{ number_format($detail->price, 0, ',', '.') }}</td><td>{{ $detail->quantity }}</td><td class="text-right"><strong>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</strong></td></tr>@endforeach</tbody><tfoot><tr><th colspan="3" class="text-right">Total Pesanan</th><th class="text-right detail-total">Rp {{ number_format($transaction->transactionDetails->sum('subtotal'), 0, ',', '.') }}</th></tr></tfoot></table></div></section>
+    <div class="management-heading">
+        <div>
+            <span class="detail-eyebrow">PESANAN SAYA</span>
+            <h1>Detail Transaksi</h1>
+            <p>Informasi lengkap pesanan dan produk yang Anda beli.</p>
+        </div>
+        <div class="d-flex" style="gap: 0.5rem;">
+            <a href="{{ route('transaction.history') }}" class="btn btn-light border"><i class="fas fa-arrow-left mr-1"></i> Kembali</a>
+            <a href="{{ route('transaction.struk', $transaction) }}" class="btn btn-light border"><i class="fas fa-receipt mr-1"></i> Lihat Struk</a>
+            <a href="{{ route('transaction.struk.download', $transaction) }}" class="btn btn-primary"><i class="fas fa-file-pdf mr-1"></i> Download PDF</a>
+        </div>
+    </div>
+    <section class="management-card detail-summary-card">
+        <div class="detail-summary-top">
+            <div>
+                <span class="detail-label">Kode transaksi</span>
+                <strong class="detail-code">{{ $transaction->transaction_code ?? '#'.$transaction->id }}</strong>
+            </div>
+            <span class="status-pill status-{{ $transaction->status }}">{{ ucfirst($transaction->status) }}</span>
+        </div>
+        <div class="detail-meta-grid">
+            <div><span class="detail-label">Tanggal pesanan</span><strong>{{ $transaction->created_at->format('d M Y, H:i') }}</strong></div>
+            <div><span class="detail-label">Diproses oleh</span><strong>{{ $transaction->cashier?->name ?? 'Belum diproses' }}</strong></div>
+            @if($transaction->payment_method)
+            <div><span class="detail-label">Pembayaran</span><strong>{{ ucwords(str_replace('_', ' ', $transaction->payment_method)) }}</strong></div>
+            @endif
+            @if($transaction->shipping_city)
+            <div><span class="detail-label">Pengiriman</span><strong>{{ $transaction->shipping_city }}</strong></div>
+            @endif
+        </div>
+    </section>
+    <section class="management-card detail-products-card">
+        <div class="management-card-head">
+            <h2>Produk Pesanan</h2>
+            <span class="category-count">{{ $transaction->transactionDetails->count() }} item</span>
+        </div>
+        <div class="table-responsive">
+            <table class="table modern-table detail-table">
+                <thead>
+                    <tr>
+                        <th>Produk</th>
+                        <th>Harga</th>
+                        <th>Jumlah</th>
+                        <th class="text-right">Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($transaction->transactionDetails as $detail)
+                    <tr>
+                        <td>
+                            <div class="detail-product-name">
+                                <span class="detail-product-icon"><i class="fas fa-tshirt"></i></span>
+                                <strong>{{ $detail->product->name }}</strong>
+                            </div>
+                        </td>
+                        <td>Rp {{ number_format($detail->price, 0, ',', '.') }}</td>
+                        <td>{{ $detail->quantity }}</td>
+                        <td class="text-right"><strong>Rp {{ number_format($detail->subtotal, 0, ',', '.') }}</strong></td>
+                    </tr>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th colspan="3" class="text-right">Total Pesanan</th>
+                        <th class="text-right detail-total">Rp {{ number_format($transaction->transactionDetails->sum('subtotal'), 0, ',', '.') }}</th>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
 </div></div>
 @endsection
