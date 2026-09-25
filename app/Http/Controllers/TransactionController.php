@@ -16,6 +16,7 @@ use App\Models\Category;
 use App\Services\TransactionService;
 use App\Services\CheckoutService;
 use App\Services\ProductService;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class TransactionController extends Controller
 {
@@ -71,12 +72,32 @@ class TransactionController extends Controller
         }
         try {
             $pending = session('pending_checkout');
-            $this->checkoutService->complete($user, $pending, $data['payment_method']);
+            $transaction = $this->checkoutService->complete($user, $pending, $data['payment_method']);
             session()->forget('pending_checkout');
-            return redirect()->route('transaction.history')->with('success', 'Checkout berhasil dibuat');
+            return redirect()->route('transaction.struk', $transaction)->with('success', 'Checkout berhasil dibuat');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
+    }
+
+    public function struk(Transaction $transaction)
+    {
+        $this->authorize('view', $transaction);
+        $transaction->load(['transactionDetails.product', 'member', 'cashier']);
+        return view('transaction.member.struk', compact('transaction'));
+    }
+
+    public function downloadStruk(Transaction $transaction)
+    {
+        $this->authorize('view', $transaction);
+        $transaction->load(['transactionDetails.product', 'member', 'cashier']);
+
+        $pdf = Pdf::loadView('transaction.member.struk-pdf', compact('transaction'))
+            ->setPaper('a4', 'portrait');
+
+        $filename = 'struk-' . ($transaction->transaction_code ?? $transaction->id) . '.pdf';
+
+        return $pdf->download($filename);
     }
 
     public function dashboard()
@@ -238,7 +259,7 @@ class TransactionController extends Controller
     {
         $user = Auth::user();
 
-        $transaction = Transaction::where('member_id', $user->id)->get();
+        $transaction = Transaction::where('member_id', $user->id)->with('transactionDetails.product')->latest()->get();
 
         return view('transaction.member.history', compact('transaction'));
     }
@@ -246,6 +267,7 @@ class TransactionController extends Controller
     public function show(Transaction $transaction)
     {
         $this->authorize('view', $transaction);
+        $transaction->load(['transactionDetails.product', 'cashier']);
         return view('transaction.member.show', compact('transaction'));
     }
 
