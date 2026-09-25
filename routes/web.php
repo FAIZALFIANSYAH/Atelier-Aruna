@@ -44,6 +44,8 @@ Route::middleware([CheckLogin::class, 'role:member'])->group(function () {
     Route::post('/checkout/confirm', [TransactionController::class, 'confirmCheckout'])->name('transaction.confirmCheckout');
     Route::get('/history-transaction', [TransactionController::class, 'history'])->name('transaction.history');
     Route::get('/transaction/{transaction}', [TransactionController::class, 'show'])->name('transaction.show');
+    Route::get('/transaction/{transaction}/struk', [TransactionController::class, 'struk'])->name('transaction.struk');
+    Route::get('/transaction/{transaction}/struk/download', [TransactionController::class, 'downloadStruk'])->name('transaction.struk.download');
     Route::patch('/transaction/{transaction}/cancel', [TransactionController::class, 'cancel'])->name('transaction.cancel');
     Route::resource('cart', CartController::class);
     Route::delete('/cart/item/{cartItem}', [CartController::class, 'removeItem'])->name('cart.removeItem');
